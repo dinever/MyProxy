@@ -1,6 +1,7 @@
 package Pararoxy
 
 import (
+	"github.com/youtube/vitess/go/vt/sqlparser"
 	"io"
 	"log"
 	"net"
@@ -47,11 +48,20 @@ func send(server, client net.Conn) {
 		}
 		switch buffer[4] {
 		case comQuery:
-			println(string(buffer[5:n]))
+			handleQuery(string(buffer[5:n]))
 		}
 		_, err = server.Write(buffer[:n])
 		if err != nil && err != io.EOF {
 			return
 		}
 	}
+}
+
+func handleQuery(sql string) error {
+	stmt, err := sqlparser.Parse(sql)
+	if err != nil {
+		return err
+	}
+	println(stmt)
+	return nil
 }
